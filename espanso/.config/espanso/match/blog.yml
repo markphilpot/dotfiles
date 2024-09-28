@@ -1,19 +1,27 @@
 matches:
 
   - trigger: ";fm"
+    label: Blog Front Matter
     replace: |
+              @: markdown-filename
               ---
               title: ''
-              date: ''
+              date: '{{date}}'
               tags: []
               category: 
               slug: 
               summary: 
-              hero: 
-              featured_image: 
+              hero: assets/hero.jpg
+              featuredImage: assets/hero.jpg
               ---
+    vars:
+      - name: date
+        type: date
+        params:
+          format: "%Y-%m-%d %H:%M:00"
 
   - trigger: ";ufm"
+    label: Blog Front Matter (Form)
     replace: |
       @: {{form1.filename}}
       ---
@@ -23,8 +31,8 @@ matches:
       category: {{form1.category}}
       slug: {{form1.slug}}
       summary: {{form1.summary}}
-      hero: 
-      featured_image: 
+      hero: assets/hero.jpg
+      featuredImage: assets/hero.jpg
       ---
     vars:
       - name: form1
