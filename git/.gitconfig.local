@@ -1,0 +1,5 @@
+[user]
+        name = Mark Philpot
+        email = mark.philpot@gmail.com
+[credential]
+        helper = osxkeychain

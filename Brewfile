@@ -1,0 +1,18 @@
+cask_args appdir: "/Applications"
+
+brew "stow"
+brew "git"
+brew "htop"
+brew "imagemagick"
+brew "wget"
+brew "neovim"
+brew "rename"
+brew "fzf"
+brew "git"
+brew "git-lfs"
+brew "bat"
+brew "jq"
+brew "kondo"
+brew "starship"
+
+cask "font-jetbrains-mono-nerd-font"

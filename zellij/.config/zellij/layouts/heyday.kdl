@@ -1,0 +1,34 @@
+env {
+    EDITOR "vim"
+}
+
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+        children
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+    }
+    cwd "/Users/mphilpot/projects/github.com/CanopyIQ/canopy"
+    tab name="docker" focus=true split_direction="vertical" {
+        // pane size="30%" focus=true {
+        //     plugin location="zellij:strider"
+        // }
+        pane
+    }
+    tab name="java" cwd="packages/canopy-java"
+    tab name="js" cwd="packages/canopy-js" split_direction="vertical" {
+        pane
+        pane split_direction="horizontal" {
+            pane name="proteus" cwd="apps/proteus"
+            pane name="seer" cwd="packages/seer"
+        }
+    }
+    tab name="sync" cwd="compat/heyday-sync"
+    tab name="python" cwd="packages/canopy-python"
+    tab name="js master" cwd="compat/canopy-js"
+    tab name="fawkes master" cwd="compat/canopy-js/packages/fawkes"
+}
