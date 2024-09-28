@@ -1,0 +1,12 @@
+matches:
+
+  - trigger: ";log"
+    replace: "-AccountUpdatedMessage -DashboardCacheEventHandler -JournalObjectUpdateMessage -Metrics -JmxReporter -SearchStatSupport" 
+
+  - trigger: ";cdc"
+    replace: "cd projects/github.com/CanopyIQ/canopy/" 
+
+  - trigger: ";imp"
+    replace: "dc stop imperio && dc rm -f imperio && dc up --build imperio" 
+
+  

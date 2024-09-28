@@ -1,0 +1,11 @@
+matches:
+
+  - trigger: ";yep"
+    replace: "конечно" 
+
+  - trigger: ";yw"
+    replace: "пожалуйста" 
+
+  - trigger: ";ty"
+    replace: "спасибо" 
+    

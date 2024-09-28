@@ -1,0 +1,59 @@
+matches:
+
+  - trigger: ";fm"
+    replace: |
+              ---
+              title: ''
+              date: ''
+              tags: []
+              category: 
+              slug: 
+              summary: 
+              hero: 
+              featured_image: 
+              ---
+
+  - trigger: ";ufm"
+    replace: |
+      @: {{form1.filename}}
+      ---
+      title: '{{form1.title}}'
+      date: '{{date}}'
+      tags: []
+      category: {{form1.category}}
+      slug: {{form1.slug}}
+      summary: {{form1.summary}}
+      hero: 
+      featured_image: 
+      ---
+    vars:
+      - name: form1
+        type: form
+        params:
+          layout: |
+            @: [[filename]]
+            ---
+            title: '[[title]]'
+            tags: []
+            category: [[category]]
+            slug: [[slug]]
+            summary: [[summary]]
+            hero: 
+            featured_image: 
+            ---
+      - name: date
+        type: date
+        params:
+          format: "%Y-%m-%d %H:%M:00"
+
+  - trigger: ";google-image-search"
+    replace: "imagesize:1920x1080" 
+
+  - trigger: ";convert-png-jpg"
+    replace: "mogrify -format jpg *.png" 
+
+  - trigger: ";pcs"
+    replace: "style=\"color: {{clip}}\"" 
+    vars:
+      - name: "clip"
+        type: "clipboard"

@@ -1,0 +1,40 @@
+matches:
+
+  # Java
+  - trigger: ";mvn"
+    replace: "mvn clean install -Pplugin,shade,docker,format"  
+
+  # Docker
+  - trigger: ";dcl"
+    replace: "dc logs -f --tail=20" 
+
+  - trigger: ";dirm"
+    replace: "docker images | fzf -m | awk '{print $3}' | xargs docker rmi" 
+
+  - trigger: ";drm"
+    replace: "docker ps -a | fzf -m | awk '{print $1}' | xargs docker rm" 
+
+  - trigger: ";dangling"
+    replace: "docker rmi $(docker images -q --filter \"dangling=true\")" 
+    
+  # Javascript
+  - trigger: ';cl'
+    replace: "console.log($|$);"
+
+  - trigger: ";format"
+    replace: "pnpm -r format" 
+
+  - trigger: ";lint"
+    replace: "pnpm -r lint" 
+
+  - trigger: ";new-next.js"
+    replace: "pnpx create-next-app@latest"
+
+  # React
+  - trigger: ";react-useCallback"
+    replace: "const $|$ = useCallback(() => {\n  \n\n}, []); "
+    force_mode: clipboard
+
+  - trigger: ";react-useEffect"
+    replace: "useEffect(() => {\n  $|$\n\n}, []); "
+    force_mode: clipboard

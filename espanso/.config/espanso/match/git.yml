@@ -1,0 +1,7 @@
+matches:
+
+  - trigger: ";gpp"
+    replace: "git pull --prune"
+
+  - trigger:
+    replace: "git stash store $(git stash create) -m \"$|$\""

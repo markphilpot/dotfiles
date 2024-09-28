@@ -1,6 +1,6 @@
 .PHONY=all delete
 
-STOW_TARGETS:=fish git neovim starship wezterm zellij zsh
+STOW_TARGETS:=espanso fish git neovim starship wezterm zellij zsh
 
 all: brew
 	stow --verbose --target=$$HOME --restow $(STOW_TARGETS)

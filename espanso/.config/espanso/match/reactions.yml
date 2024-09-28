@@ -1,0 +1,26 @@
+matches:
+
+  - trigger: ";shrug"
+    replace: "¯\_(ツ)_/¯" 
+
+  - trigger: "shipit"
+    replace: "http://i.imgur.com/zzTu84u.jpg" 
+
+  - trigger: ";headdesk"
+    replace: "https://78.media.tumblr.com/ad3eb16cbb8645a41c48c6bb2995ccc2/tumblr_nhu054bNIT1u7h294o1_500.gif" 
+
+  - trigger: ";letsgo"
+    replace: "https://c.tenor.com/Cd2vV8ZOuzoAAAAC/bb-baby.gif" 
+
+  - trigger: ";fist"
+    replace: "https://i.imgur.com/u7r1Bds.gif" 
+
+  - trigger: ";testprod"
+    replace: "https://memecrunch.com/meme/BN82/i-don-t-always-test-my-code/image.jpg?w=550&amp;c=1" 
+
+  - trigger: ";shipall"
+    replace: "https://memegenerator.net/img/instances/64276120/ship-all-the-things.jpg" 
+
+  - trigger: ";run"
+    replace: "ᕕ(ᐛ)ᕗ" 
+    

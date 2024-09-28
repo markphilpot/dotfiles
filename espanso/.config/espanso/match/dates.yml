@@ -1,0 +1,24 @@
+matches:
+  - trigger: "nnow"
+    replace: "{{date}}"
+    vars:
+      - name: date
+        type: date
+        params:
+          format: "%Y-%m-%d %H:%M:00"
+
+  - trigger: "ddate"
+    replace: "{{date}}"
+    vars:
+      - name: date
+        type: date
+        params:
+          format: "%B %_d, %Y"
+
+  - trigger: "dnow"
+    replace: "{{date}}"
+    vars:
+      - name: date
+        type: date
+        params:
+          format: "%Y%m%d"

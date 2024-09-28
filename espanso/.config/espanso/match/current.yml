@@ -1,0 +1,13 @@
+matches:
+
+  - trigger: ;1
+    force_mode: clipboard
+    replace: "const { colors, styles } = useStyles(createStyles);"
+
+  - trigger: ;2
+    force_mode: clipboard
+    replace: "const createStyles = (colors: TColors) => StyleSheet.create({$|$});"
+
+  - trigger: ;nav
+    force_mode: clipboard
+    replace: "const navigation = useNavigation<NavigationProp<RouteParams>>();"

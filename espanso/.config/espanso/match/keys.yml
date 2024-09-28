@@ -1,0 +1,60 @@
+matches:
+  - trigger: ";opt"
+    replace: "⌥"
+
+  - trigger: ";bs"
+    replace: "⌫"
+
+  - trigger: ";cmd"
+    replace: "⌘"
+
+  - trigger: ";ctl"
+    replace: "⌃"
+
+  - trigger: ";shift"
+    replace: "⇧"
+
+  - trigger: ";tab"
+    replace: "⇥"
+
+  - trigger: ";cap"
+    replace: "⇪"
+
+  - trigger: ";eject"
+    replace: "⏏︎"
+
+  - trigger: ":esc"
+    replace: "␛"
+
+  - trigger: ";esc"
+    replace: "⎋"
+
+  - trigger: ";apple"
+    replace: ""
+
+  - trigger: ";left"
+    replace: "←" 
+
+  - trigger: ";right"
+    replace: "→" 
+
+  - trigger: ";up"
+    replace: "↑" 
+
+  - trigger: ";down"
+    replace: "↓" 
+  
+  - trigger: ";return"
+    replace: "↩" 
+
+  - trigger: ";x"
+    replace: "×" 
+
+  - trigger: ";kall"
+    replace: "⌃⌥⇧⌘" 
+
+  - trigger: ";enter"
+    replace: "⌅" 
+
+  - trigger: ";space"
+    replace: "␣" 
