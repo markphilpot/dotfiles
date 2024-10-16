@@ -9,6 +9,8 @@ local config = wezterm.config_builder()
 
 -- START CONFIG
 
+config.default_prog = { "/opt/homebrew/bin/fish", "-l" }
+
 -- Pick a colour scheme. WezTerm ships with more than 1,000!
 -- Find them here: https://wezfurlong.org/wezterm/colorschemes/index.html
 if appearance.is_dark() then
