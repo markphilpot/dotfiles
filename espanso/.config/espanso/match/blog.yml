@@ -18,7 +18,21 @@ matches:
       - name: date
         type: date
         params:
-          format: "%Y-%m-%d %H:%M:00"
+          format: "%FT%T"
+
+  - trigger: ";mfm"
+    label: Micro Blog Front Matter
+    replace: |
+              @: markdown-filename
+              ---
+              slug: 'markdown-filename'
+              date: '{{date}}'
+              ---
+    vars:
+      - name: date
+        type: date
+        params:
+          format: "%FT%T"
 
   - trigger: ";ufm"
     label: Blog Front Matter (Form)

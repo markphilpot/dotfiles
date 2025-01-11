@@ -9,7 +9,7 @@ then
   source ~/.localrc
 fi
 
-export PATH="./bin:/usr/local/bin:/usr/local/sbin:$ZSH/bin:$PATH"
+export PATH="./bin:/usr/local/bin:/usr/local/sbin:$ZSH/bin:/opt/homebrew/bin:$PATH"
 
 eval "$(starship init zsh)"
 
