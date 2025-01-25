@@ -14,5 +14,7 @@ brew "bat"
 brew "jq"
 brew "kondo"
 brew "starship"
+brew "zsh-syntax-highlighting"
+brew "zsh-autosuggestions"
 
 cask "font-jetbrains-mono-nerd-font"
