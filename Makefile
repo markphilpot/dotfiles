@@ -9,7 +9,7 @@ Brewfile.lock.json: Brewfile
 # https://unix.stackexchange.com/a/771880
 # List of packages to manage with stow
 #PACKAGES ?= $(filter-out .git .github, $(wildcard */))
-PACKAGES ?= espanso fish git neovim starship wezterm zellij zsh
+PACKAGES ?= espanso fish git neovim starship wezterm zellij zsh bash
 
 # Directory where stow will look for packages. Default is current directory
 DIR ?= $$(pwd)
