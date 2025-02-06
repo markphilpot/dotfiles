@@ -1,6 +1,6 @@
 apt:
 	sudo apt update
-	sudo apt install starship stow neovim
+	sudo apt install stow
 
 Brewfile.lock.json: Brewfile
 	brew bundle
@@ -38,7 +38,7 @@ define backup_if_exists
         filepath=${TARGET}/$$file; \
         backup_suffix="backup-$$(date -u +%Y%m%d%H%M%S)"; \
         echo "Creating backup $$filepath.$$backup_suffix"; \
-        mv -h "$$filepath" "$$filepath.$$backup_suffix"; \
+        mv "$$filepath" "$$filepath.$$backup_suffix"; \
     done
 endef
 
