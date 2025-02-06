@@ -47,20 +47,20 @@ all: stow
 
 # Rule to backup existing configurations
 backup:
-    @echo "Checking for existing files to backup..."
-    @$(foreach package,$(PACKAGES), \
+	@echo "Checking for existing files to backup..."
+	@$(foreach package,$(PACKAGES), \
         $(call backup_if_exists,$(package));)
 
 # Rule to link configurations using stow
 stow: backup
-    @echo "Applying stow for packages..."
-    @$(foreach package,${PACKAGES}, \
+	@echo "Applying stow for packages..."
+	@$(foreach package,${PACKAGES}, \
         $(STOW_CMD) ${package};)
 
 # Rule to remove symbolic links
 unstow:
-    @echo "Removing stow links for packages..."
-    @$(foreach package,$(PACKAGES), \
+	@echo "Removing stow links for packages..."
+	@$(foreach package,$(PACKAGES), \
         $(STOW_CMD) -D $(package);)
 
 # Rule to reapply symbolic links
@@ -68,17 +68,17 @@ restow: backup unstow stow
 
 # Rule to display help
 help:
-    @echo ""
-    @echo "\033[1mUSAGE\033[0m"
-    @echo ""
-    @echo "  make [target]"
-    @echo ""
-    @echo "\033[1mTARGETS\033[0m"
-    @echo ""
-    @echo "  stow    - Create symlinks for all packages (default)"
-    @echo "  restow  - Reapply symlinks for all packages"
-    @echo "  unstow  - Remove symlinks for all packages (\033[31mcaution\033[0m)"
-    @echo "  help    - Show this help message"
-    @echo ""
+	@echo ""
+	@echo "\033[1mUSAGE\033[0m"
+	@echo ""
+	@echo "  make [target]"
+	@echo ""
+	@echo "\033[1mTARGETS\033[0m"
+	@echo ""
+	@echo "  stow    - Create symlinks for all packages (default)"
+	@echo "  restow  - Reapply symlinks for all packages"
+	@echo "  unstow  - Remove symlinks for all packages (\033[31mcaution\033[0m)"
+	@echo "  help    - Show this help message"
+	@echo ""
 
 .PHONY: all backup stow unstow restow help apt
