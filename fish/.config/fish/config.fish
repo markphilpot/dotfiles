@@ -3,6 +3,7 @@ if status is-interactive
     starship init fish | source
     fish_add_path /opt/homebrew/bin
     fish_add_path ~/.dotfiles/bin
+    fish_add_path ~/.local/bin
 
     alias d='docker'
     alias dc='docker-compose'
