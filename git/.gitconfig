@@ -33,6 +33,7 @@
         branches = branch -a
         tags = tag
         stashes = stash list
+        staash = stash --all
 
         unstage = reset -q HEAD --
         discard = checkout --
