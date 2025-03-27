@@ -1,5 +1,22 @@
 [user]
-        name = Mark Philpot
-        email = mark.philpot@gmail.com
+    name = Mark Philpot
+    email = mark.philpot@gmail.com
+    signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIWCEN1dlLoI4JGw741u+ekKSGe3/4GPTM9cyQOnEwUp
+
 [credential]
-        helper = osxkeychain
+    helper = osxkeychain
+
+[gpg]
+	format = ssh
+
+[gpg "ssh"]
+	program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
+
+[commit]
+	gpgsign = true
+
+[maintenance]
+	repo = /Users/mphilpot/projects/github.com/betterup/betterup-monolith
+
+[core]
+    editor = nvim
