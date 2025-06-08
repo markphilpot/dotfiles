@@ -80,3 +80,4 @@ function k
 umask 022
 # Added by LM Studio CLI (lms)
 export PATH="$PATH:/Users/mphilpot/.lmstudio/bin"
+eval "$(atuin init zsh)"

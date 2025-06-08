@@ -20,6 +20,8 @@ if status is-interactive
 
     source "$HOME/.cargo/env.fish"
 
+    atuin init fish | source
+
     set -U fish_greeting "🐟"
 
     # Emulates vim's cursor shape behavior
