@@ -178,3 +178,9 @@ function k
 
     cd $cdback
 }
+. "$HOME/.cargo/env"
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/mphilpot/.lmstudio/bin"
+# End of LM Studio CLI section
+

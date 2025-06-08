@@ -18,6 +18,8 @@ if status is-interactive
         rbenv init - | source
     end
 
+    source "$HOME/.cargo/env.fish"
+
     set -U fish_greeting "🐟"
 
     # Emulates vim's cursor shape behavior
@@ -38,3 +40,6 @@ if status is-interactive
 
     fish_vi_key_bindings
 end
+
+# Added by LM Studio CLI (lms)
+set -gx PATH $PATH /Users/mphilpot/.lmstudio/bin
