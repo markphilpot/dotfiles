@@ -1,19 +1,15 @@
 matches:
-
   - trigger: ";fm"
     label: Blog Front Matter
     replace: |
-              @: markdown-filename
-              ---
-              title: ''
-              date: '{{date}}'
-              tags: []
-              category: 
-              slug: 
-              summary: 
-              hero: assets/hero.jpg
-              featuredImage: assets/hero.jpg
-              ---
+      @: markdown-filename
+      ---
+      title: 
+      date: '{{date}}'
+      tags: []
+      slug: 
+      summary: 
+      ---
     vars:
       - name: date
         type: date
@@ -23,11 +19,11 @@ matches:
   - trigger: ";mfm"
     label: Micro Blog Front Matter
     replace: |
-              @: markdown-filename
-              ---
-              date: '{{date}}'
-              showReadingTime: false
-              ---
+      @: markdown-filename
+      ---
+      date: '{{date}}'
+      showReadingTime: false
+      ---
     vars:
       - name: date
         type: date
@@ -69,13 +65,13 @@ matches:
           format: "%Y-%m-%d %H:%M:00"
 
   - trigger: ";google-image-search"
-    replace: "imagesize:1920x1080" 
+    replace: "imagesize:1920x1080"
 
   - trigger: ";convert-png-jpg"
-    replace: "mogrify -format jpg *.png" 
+    replace: "mogrify -format jpg *.png"
 
   - trigger: ";pcs"
-    replace: "style=\"color: {{clip}}\"" 
+    replace: 'style="color: {{clip}}"'
     vars:
       - name: "clip"
         type: "clipboard"
