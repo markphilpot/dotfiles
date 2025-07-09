@@ -22,26 +22,7 @@ eval "$(starship init zsh)"
 #
 # Language Setup
 #
-
-# Ruby
-if (( $+commands[rbenv] ))
-then
-  eval "$(rbenv init -)"
-fi
-
-# Node
-if (( $+commands[fnm] ))
-then
-    eval "$(fnm env --use-on-cd)"
-fi
-
-# Python
-if (( $+commands[pyenv] ))
-then
-    eval "$(pyenv init -)"
-    eval "$(pyenv virtualenv-init -)"
-fi
-
+eval "$(mise activate zsh)"
 
 alias d='docker $*'
 alias dc='docker-compose $*'

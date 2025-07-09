@@ -10,16 +10,6 @@ if status is-interactive
     alias drmi="docker images | fzf -m | awk '{print $3}' | xargs docker rmi"
     alias drm="docker ps -a | fzf -m | awk '{print $1}' | xargs docker rm"
 
-    if type -q fnm
-        fnm env --use-on-cd --shell fish | source
-    end
-
-    if type -q rbenv
-        rbenv init - | source
-    end
-
-    source "$HOME/.cargo/env.fish"
-
     atuin init fish | source
 
     set -U fish_greeting "🐟"
