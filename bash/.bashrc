@@ -184,3 +184,4 @@ function k
 export PATH="$PATH:/Users/mphilpot/.lmstudio/bin"
 # End of LM Studio CLI section
 
+eval "$(/home/codespace/.local/bin/mise activate bash)" # added by https://mise.run/bash

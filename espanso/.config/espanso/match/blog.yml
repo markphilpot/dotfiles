@@ -23,46 +23,13 @@ matches:
       ---
       date: '{{date}}'
       showReadingTime: false
+      draft: true
       ---
     vars:
       - name: date
         type: date
         params:
           format: "%FT%T"
-
-  - trigger: ";ufm"
-    label: Blog Front Matter (Form)
-    replace: |
-      @: {{form1.filename}}
-      ---
-      title: '{{form1.title}}'
-      date: '{{date}}'
-      tags: []
-      category: {{form1.category}}
-      slug: {{form1.slug}}
-      summary: {{form1.summary}}
-      hero: assets/hero.jpg
-      featuredImage: assets/hero.jpg
-      ---
-    vars:
-      - name: form1
-        type: form
-        params:
-          layout: |
-            @: [[filename]]
-            ---
-            title: '[[title]]'
-            tags: []
-            category: [[category]]
-            slug: [[slug]]
-            summary: [[summary]]
-            hero: 
-            featured_image: 
-            ---
-      - name: date
-        type: date
-        params:
-          format: "%Y-%m-%d %H:%M:00"
 
   - trigger: ";google-image-search"
     replace: "imagesize:1920x1080"
