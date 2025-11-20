@@ -10,16 +10,17 @@ local config = wezterm.config_builder()
 -- START CONFIG
 
 config.default_prog = { "/opt/homebrew/bin/fish", "-l" }
+-- config.default_prog = { 'zellij', '-l', 'welcome' }
+-- config.default_prog = { 'zellij' }
 
 -- Pick a colour scheme. WezTerm ships with more than 1,000!
 -- Find them here: https://wezfurlong.org/wezterm/colorschemes/index.html
 if appearance.is_dark() then
-	config.color_scheme = "Night Owl (Gogh)"
+	-- config.color_scheme = "Night Owl (Gogh)"
+    config.color_scheme = 'Monokai Pro (Gogh)'
 else
 	config.color_scheme = "Night Owlish Light"
 end
-
--- config.default_prog = { 'zellij', '-l', 'welcome' }
 
 -- Choose your favourite font, make sure it's installed on your machine
 config.font = wezterm.font({ family = "JetBrainsMono Nerd Font" })

@@ -38,15 +38,18 @@ matches:
 
   - trigger: ";em"
     replace: "mark.philpot@gmail.com"
-  
+
+  - trigger: ";bu"
+    replace: "mark.philpot@betterup.co"
+
   - trigger: ";ph"
     replace: "202.215.1677"
-  
+
   - trigger: ";home"
     replace: >
-             122 Hillcrest Rd
-             San Carlos, CA 94070
-  
+      122 Hillcrest Rd
+      San Carlos, CA 94070
+
   - trigger: ";mdb"
     replace: "```\n{{clip}}\n```"
     vars:
@@ -59,12 +62,12 @@ matches:
       - name: "clip"
         type: "clipboard"
 
-  - trigger: ';esm'
+  - trigger: ";esm"
     form: |
       - trigger: "[[trigger]]"
-        replace: "[[replace]]" 
+        replace: "[[replace]]"
 
-  - trigger: ';esb'
+  - trigger: ";esb"
     form: |
       - trigger: "[[trigger]]"
         replace: "[[replace]]" 
@@ -73,5 +76,4 @@ matches:
             type: "clipboard"
 
   - trigger: ";pass"
-    replace: "xvm1DFG#jcn7evw4buc" 
-    
+    replace: "xvm1DFG#jcn7evw4buc"

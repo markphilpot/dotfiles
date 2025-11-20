@@ -31,6 +31,9 @@ if status is-interactive
     set fish_vi_force_cursor true
 
     fish_vi_key_bindings
+
+    # Autostart zellij
+    eval (zellij setup --generate-auto-start fish | string collect)
 end
 
 # Added by LM Studio CLI (lms)
