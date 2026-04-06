@@ -21,7 +21,7 @@ matches:
       - name: date
         type: date
         params:
-          format: "%B %_d, %Y"
+          format: "%B %-d, %Y"
 
   - trigger: "dnow"
     replace: "{{date}}"
