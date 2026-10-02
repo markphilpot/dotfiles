@@ -17,7 +17,8 @@ config.default_prog = { "/opt/homebrew/bin/fish", "-l" }
 -- Find them here: https://wezfurlong.org/wezterm/colorschemes/index.html
 if appearance.is_dark() then
 	-- config.color_scheme = "Night Owl (Gogh)"
-    config.color_scheme = 'Monokai Pro (Gogh)'
+    -- config.color_scheme = 'Monokai Pro (Gogh)'
+    config.color_scheme = 'Catppuccin Mocha (Gogh)'
 else
 	config.color_scheme = "Night Owlish Light"
 end
@@ -31,7 +32,7 @@ config.tab_bar_at_bottom = false
 config.hide_tab_bar_if_only_one_tab = true
 
 -- Slightly transparent and blurred background
-config.window_background_opacity = 0.90
+config.window_background_opacity = 0.95
 config.macos_window_background_blur = 30
 -- Removes the title bar, leaving only the tab bar. Keeps
 -- the ability to resize by dragging the window's edges.
