@@ -1,10 +1,11 @@
+.DEFAULT_GOAL := stow
+
 apt:
-	sudo apt update
-	sudo apt install stow
+	sudo apt-get update
+	sudo apt-get install -y stow
 
-Brewfile.lock.json: Brewfile
-	brew bundle
-
+brew:
+	brew bundle --file=Brewfile
 
 # https://unix.stackexchange.com/a/771880
 # List of packages to manage with stow
@@ -35,13 +36,15 @@ STOW_CMD = stow \
     --no-folding \
     --verbose
 
-# Function to backup existing files for a specific package if they exist
+# Function to backup existing files for a specific package if they exist.
+# Matches the conflict message from both stow 2.3 and stow 2.4.
 define backup_if_exists
-    checks=$$(${STOW_CMD} --no --verbose ${1} 2>&1 | \
-        egrep '\* existing target is ' | \
-        sed 's/  \* existing target is neither a link nor a directory: //'); \
-    for file in $$checks; do \
-        filepath=${TARGET}/$$file; \
+    ${STOW_CMD} --no ${1} 2>&1 | \
+        sed -nE \
+            -e 's/.*existing target is neither a link nor a directory: (.*)/\1/p' \
+            -e 's/.*over existing target (.*) since neither a link nor a directory.*/\1/p' | \
+    while IFS= read -r file; do \
+        filepath="${TARGET}/$$file"; \
         backup_suffix="backup-$$(date -u +%Y%m%d%H%M%S)"; \
         echo "Creating backup $$filepath.$$backup_suffix"; \
         mv "$$filepath" "$$filepath.$$backup_suffix"; \
@@ -84,7 +87,9 @@ help:
 	@echo "  stow    - Create symlinks for all packages (default)"
 	@echo "  restow  - Reapply symlinks for all packages"
 	@echo "  unstow  - Remove symlinks for all packages (\033[31mcaution\033[0m)"
+	@echo "  brew    - Install everything in the Brewfile"
+	@echo "  apt     - Install stow with apt (Linux)"
 	@echo "  help    - Show this help message"
 	@echo ""
 
-.PHONY: all backup stow unstow restow help apt
+.PHONY: all backup stow unstow restow help apt brew
