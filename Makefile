@@ -11,6 +11,12 @@ Brewfile.lock.json: Brewfile
 #PACKAGES ?= $(filter-out .git .github, $(wildcard */))
 PACKAGES ?= espanso fish git neovim starship wezterm zellij zsh bash
 
+# Packages that only apply on macOS (signing, keychain, 1Password)
+OS ?= $(shell uname -s)
+ifeq ($(OS),Darwin)
+PACKAGES += git-macos
+endif
+
 # Directory where stow will look for packages. Default is current directory
 DIR ?= $$(pwd)
 
