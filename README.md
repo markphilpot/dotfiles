@@ -78,6 +78,7 @@ chooses its own set. Names are separated by spaces or newlines.
 | `media` | Audio, video, image and document conversion tools |
 | `audio` | Audio recording, routing and music production apps |
 | `personal` | Productivity, media and everyday apps |
+| `mas` | Mac App Store apps |
 
 To add a profile for a single run:
 
