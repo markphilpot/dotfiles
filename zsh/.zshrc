@@ -11,7 +11,7 @@ fi
 
 export PATH="./bin:/usr/local/bin:/usr/local/sbin:$ZSH/bin:/opt/homebrew/bin:$PATH"
 
-eval "$(starship init zsh)"
+command -v starship >/dev/null 2>&1 && eval "$(starship init zsh)"
 
 # Extended Sources
 
@@ -22,7 +22,11 @@ eval "$(starship init zsh)"
 #
 # Language Setup
 #
-eval "$(mise activate zsh)"
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate zsh)"
+elif [ -x "$HOME/.local/bin/mise" ]; then
+  eval "$("$HOME/.local/bin/mise" activate zsh)"
+fi
 
 alias d='docker $*'
 alias dc='docker-compose $*'
@@ -32,8 +36,13 @@ alias drm="docker ps -a | fzf -m | awk '{print $1}' | xargs docker rm"
 
 export EDITOR='code'
 
+# Homebrew-installed zsh plugins (skipped where Homebrew is not available)
+if command -v brew >/dev/null 2>&1; then
+  brew_prefix="${HOMEBREW_PREFIX:-$(brew --prefix)}"
+fi
+
 # Activate syntax highlighting
-source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+[ -f "$brew_prefix/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ] && source "$brew_prefix/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
 # Disable underline (syntax highlighting)
 # (( ${+ZSH_HIGHLIGHT_STYLES} )) || typeset -A ZSH_HIGHLIGHT_STYLES
@@ -41,7 +50,7 @@ source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zs
 # ZSH_HIGHLIGHT_STYLES[path_prefix]=none
 
 # Activate autosuggestions
-source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+[ -f "$brew_prefix/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ] && source "$brew_prefix/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
 setopt HIST_IGNORE_ALL_DUPS  # don't record dupes in history
 setopt HIST_REDUCE_BLANKS
@@ -59,6 +68,4 @@ function k
 }
 
 umask 022
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/Users/mphilpot/.lmstudio/bin"
-eval "$(atuin init zsh)"
+command -v atuin >/dev/null 2>&1 && eval "$(atuin init zsh)"

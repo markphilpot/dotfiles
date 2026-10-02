@@ -1,16 +1,17 @@
 if status is-interactive
     # Commands to run in interactive sessions can go here
-    starship init fish | source
-    fish_add_path /opt/homebrew/bin
+    test -d /opt/homebrew/bin; and fish_add_path /opt/homebrew/bin
     fish_add_path ~/.dotfiles/bin
     fish_add_path ~/.local/bin
+
+    type -q starship; and starship init fish | source
 
     alias d='docker'
     alias dc='docker-compose'
     alias drmi="docker images | fzf -m | awk '{print $3}' | xargs docker rmi"
     alias drm="docker ps -a | fzf -m | awk '{print $1}' | xargs docker rm"
 
-    atuin init fish | source
+    type -q atuin; and atuin init fish | source
 
     set -U fish_greeting "🐟"
 
@@ -33,8 +34,5 @@ if status is-interactive
     fish_vi_key_bindings
 
     # Autostart zellij
-    eval (zellij setup --generate-auto-start fish | string collect)
+    type -q zellij; and eval (zellij setup --generate-auto-start fish | string collect)
 end
-
-# Added by LM Studio CLI (lms)
-set -gx PATH $PATH /Users/mphilpot/.lmstudio/bin

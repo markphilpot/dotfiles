@@ -178,10 +178,10 @@ function k
 
     cd $cdback
 }
-. "$HOME/.cargo/env"
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/Users/mphilpot/.lmstudio/bin"
-# End of LM Studio CLI section
-
-eval "$(/home/codespace/.local/bin/mise activate bash)" # added by https://mise.run/bash
+if command -v mise >/dev/null 2>&1; then
+    eval "$(mise activate bash)"
+elif [ -x "$HOME/.local/bin/mise" ]; then
+    eval "$("$HOME/.local/bin/mise" activate bash)"
+fi
