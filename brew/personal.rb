@@ -21,3 +21,8 @@ cask "marta"
 cask "bloom"
 cask "gray"
 cask "nightfall"
+
+# Install manually (no cask):
+#   Peakto
+#   Bandcamp
+#   Sidetrack

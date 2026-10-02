@@ -1,0 +1,34 @@
+# Apps, casks and formulae that brew-sync should never report.
+# One per line: an app name ("Safari.app") or a brew name ("pyenv").
+
+# Part of macOS or installed alongside another app
+Safari.app
+BackblazeRestore.app
+Blackmagic Proxy Generator Lite.app
+Claude Code URL Handler.app
+
+# Recorded by cask name; installer-based casks cannot be matched by app name
+Backblaze.app
+IK Product Manager.app
+iLok License Manager.app
+SF Symbols.app
+Synology Drive Client.app
+zoom.us.app
+
+# No cask exists; listed as manual installs in the profile files
+AmpliTube 5.app
+Bandcamp.app
+Guitar Pro 7.app
+LABS.app
+Peakto.app
+Sidetrack.app
+
+# Local builds
+hasgif.app
+
+# Formulae deliberately not recorded
+arp-scan
+pyenv-virtualenv
+re2c
+reattach-to-user-namespace
+sdl2_image
