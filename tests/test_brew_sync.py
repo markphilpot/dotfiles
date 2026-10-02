@@ -34,17 +34,19 @@ class Fixture(unittest.TestCase):
         self.apps = root / "Applications"
         self.brew = root / "brew"
         self.brew.mkdir()
+        self.store_ids = {}
         (self.brew / "core.rb").write_text('brew "fish"\ncask "wezterm"\ncask "obsidian"\n')
 
-    def make_app(self, name, app_store=False):
+    def make_app(self, name, app_store=False, store_id=None):
         contents = self.apps / name / "Contents"
         contents.mkdir(parents=True)
         if app_store:
             (contents / "_MASReceipt").mkdir()
+            self.store_ids[name] = store_id
 
     def classify(self, installed_casks=(), installed_formulae=()):
         return brew_sync.classify(
-            brew_sync.scan_apps([str(self.apps)]),
+            brew_sync.scan_apps([str(self.apps)], store_id=lambda app: self.store_ids[app.name]),
             brew_sync.build_index(CASKS),
             brew_sync.read_profiles(self.brew),
             brew_sync.read_ignored(self.brew),
@@ -83,10 +85,20 @@ class ClassifyTest(Fixture):
         self.assertEqual(report["casks"], [])
 
     def test_app_store_app_is_reported_separately(self):
-        self.make_app("Freeze.app", app_store=True)
+        self.make_app("Freeze.app", app_store=True, store_id="1046095491")
         report = self.classify()
-        self.assertEqual(report["app_store"], [("Freeze.app", ["freeze"])])
+        self.assertEqual(report["app_store"], [("Freeze.app", "1046095491")])
         self.assertEqual(report["unrecorded"], [])
+
+    def test_app_store_app_recorded_by_id_is_not_reported(self):
+        self.make_app("Bear.app", app_store=True, store_id="1091189122")
+        (self.brew / "mas.rb").write_text('mas "Bear Notes", id: 1091189122\n')
+        self.assertFalse(any(self.classify().values()))
+
+    def test_app_store_app_without_an_id_is_still_reported(self):
+        self.make_app("Bear.app", app_store=True, store_id=None)
+        (self.brew / "mas.rb").write_text('mas "Bear", id: 1091189122\n')
+        self.assertEqual(self.classify()["app_store"], [("Bear.app", None)])
 
     def test_app_without_a_cask_is_unmatched(self):
         self.make_app("zoom.us.app")
@@ -133,6 +145,13 @@ class WriteTest(Fixture):
         self.assertTrue(brew_sync.add_entry(self.brew, "audio", "cask", "audio-hijack"))
         self.assertIn('cask "audio-hijack"\n', (self.brew / "audio.rb").read_text())
         self.assertIn("audio-hijack", brew_sync.read_profiles(self.brew)["audio"]["cask"])
+
+    def test_add_mas_appends_once_by_id(self):
+        self.assertTrue(brew_sync.add_mas_entry(self.brew, "mas", "Logic Pro.app", "634148309"))
+        self.assertFalse(brew_sync.add_mas_entry(self.brew, "mas", "Logic Pro X.app", "634148309"))
+        text = (self.brew / "mas.rb").read_text()
+        self.assertTrue(text.endswith('mas "Logic Pro", id: 634148309\n'))
+        self.assertEqual(brew_sync.read_profiles(self.brew)["mas"]["mas"], {"634148309"})
 
     def test_ignore_appends_once(self):
         self.assertTrue(brew_sync.add_ignored(self.brew, "Safari.app"))

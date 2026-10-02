@@ -96,12 +96,16 @@ brew-sync                                # report what is not recorded
 brew-sync add                            # choose a profile for each unrecorded app
 brew-sync add zoom --profile apps        # record a cask by name
 brew-sync add ripgrep --profile core --formula
+brew-sync add --mas --profile mas         # record every unrecorded App Store app
 brew-sync ignore "Safari.app"            # stop reporting something
 ```
 
 It matches apps in `/Applications` to casks by app name. Casks that install
 from a `.pkg` cannot be matched that way; record those by name and add the
-app to `brew/ignore.txt`. App Store apps are reported but not recorded.
+app to `brew/ignore.txt`.
+
+App Store apps are recorded as `mas` entries by their store ID. Installing
+them needs the App Store app signed in to an Apple ID that owns them.
 
 ## Make targets
 

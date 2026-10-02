@@ -4,6 +4,7 @@
     brew-sync                               report what is not recorded
     brew-sync add                           walk unrecorded apps and pick a profile
     brew-sync add <cask>... --profile NAME  record casks without prompting
+    brew-sync add --mas --profile NAME      record every unrecorded App Store app
     brew-sync ignore <name>...              never report these again
 
 Apps are matched to casks by the .app name each cask installs, using
@@ -24,6 +25,7 @@ CASK_API_URL = "https://formulae.brew.sh/api/cask.json"
 CACHE_MAX_AGE = 24 * 60 * 60
 APP_DIRS = ["/Applications", "~/Applications"]
 ENTRY_RE = re.compile(r'^\s*(brew|cask)\s+"([^"]+)"', re.M)
+MAS_RE = re.compile(r'^\s*mas\s+"[^"]+",\s*id:\s*(\d+)', re.M)
 
 REPO = Path(os.path.realpath(__file__)).parent.parent
 
@@ -73,16 +75,25 @@ def load_casks(path=None, refresh=False):
 
 # --- this machine ---------------------------------------------------------
 
-def scan_apps(app_dirs):
-    """Return [(app name, is from the App Store)] for top-level .app bundles."""
+def spotlight_store_id(app):
+    """The App Store ID of an app, from Spotlight metadata, or None."""
+    result = subprocess.run(["mdls", "-raw", "-name", "kMDItemAppStoreAdamID", str(app)],
+                            capture_output=True, text=True)
+    value = result.stdout.strip()
+    return value if value.isdigit() else None
+
+
+def scan_apps(app_dirs, store_id=spotlight_store_id):
+    """Return [(app name, is from the App Store, store ID)] for top-level .app bundles."""
     apps = {}
     for app_dir in app_dirs:
         directory = Path(app_dir).expanduser()
         if not directory.is_dir():
             continue
         for app in directory.glob("*.app"):
-            apps[app.name] = (app / "Contents" / "_MASReceipt").exists()
-    return sorted(apps.items(), key=lambda item: item[0].lower())
+            from_app_store = (app / "Contents" / "_MASReceipt").exists()
+            apps[app.name] = (from_app_store, store_id(app) if from_app_store else None)
+    return sorted(((name, *info) for name, info in apps.items()), key=lambda item: item[0].lower())
 
 
 def brew_lines(*args):
@@ -93,11 +104,12 @@ def brew_lines(*args):
 # --- Brewfile profiles ----------------------------------------------------
 
 def read_profiles(brew_dir):
-    """Return {profile: {"brew": set, "cask": set}} for every brew/*.rb."""
+    """Return {profile: {"brew": set, "cask": set, "mas": set of IDs}} for every brew/*.rb."""
     profiles = {}
     for path in sorted(Path(brew_dir).glob("*.rb")):
-        entries = {"brew": set(), "cask": set()}
-        for kind, name in ENTRY_RE.findall(path.read_text()):
+        text = path.read_text()
+        entries = {"brew": set(), "cask": set(), "mas": set(MAS_RE.findall(text))}
+        for kind, name in ENTRY_RE.findall(text):
             entries[kind].add(name.split("/")[-1])
         profiles[path.stem] = entries
     return profiles
@@ -125,6 +137,19 @@ def add_entry(brew_dir, profile, kind, name):
     if not text.endswith("\n"):
         text += "\n"
     path.write_text(text + f'{kind} "{name}"\n')
+    return True
+
+
+def add_mas_entry(brew_dir, profile, app, store_id):
+    """Append an App Store app to a profile. Returns False if its ID is already recorded."""
+    if store_id in recorded(read_profiles(brew_dir), "mas"):
+        return False
+    path = Path(brew_dir) / f"{profile}.rb"
+    text = path.read_text() if path.exists() else f"# {profile} profile.\n\n"
+    if not text.endswith("\n"):
+        text += "\n"
+    name = app[:-4] if app.endswith(".app") else app
+    path.write_text(text + f'mas "{name}", id: {store_id}\n')
     return True
 
 
@@ -158,17 +183,20 @@ def candidates_for(app, index, installed_casks):
 def classify(apps, index, profiles, ignored, installed_casks, installed_formulae):
     recorded_casks = recorded(profiles, "cask")
     recorded_formulae = recorded(profiles, "brew")
+    recorded_store_ids = recorded(profiles, "mas")
     report = {
         "unrecorded": [],      # (app, [candidate casks])
-        "app_store": [],       # (app, [candidate casks])
+        "app_store": [],       # (app, store ID or None) not recorded as a mas entry
         "unmatched": [],       # app
         "needs_adopt": [],     # (app, cask) recorded but not yet managed by brew
         "casks": [],           # brew-managed casks missing from every profile
         "formulae": [],        # brew-managed formulae missing from every profile
     }
     seen_casks = set()
-    for app, from_app_store in apps:
+    for app, from_app_store, store_id in apps:
         tokens = index.get(app, [])
+        if from_app_store and store_id in recorded_store_ids:
+            continue
         in_brewfile = [t for t in tokens if t in recorded_casks]
         if in_brewfile:
             seen_casks.update(in_brewfile)
@@ -181,7 +209,7 @@ def classify(apps, index, profiles, ignored, installed_casks, installed_formulae
         candidates = candidates_for(app, index, installed_casks)
         seen_casks.update(candidates)
         if from_app_store:
-            report["app_store"].append((app, candidates))
+            report["app_store"].append((app, store_id))
         elif candidates:
             report["unrecorded"].append((app, candidates))
         else:
@@ -238,8 +266,8 @@ def cmd_report(args):
     section("Brew formulae that are not in the Brewfile", report["formulae"])
     section("In the Brewfile but not yet managed by brew (brew bundle will adopt these)",
             [f"{app:32} {token}" for app, token in report["needs_adopt"]])
-    section("App Store apps (not recorded; needs mas)",
-            [app for app, _ in report["app_store"]])
+    section("App Store apps that are not in the Brewfile",
+            [f"{app:32} {store_id or '(no store ID found)'}" for app, store_id in report["app_store"]])
     section("Apps with no matching cask", report["unmatched"])
     if not any(report.values()):
         print("Everything installed is recorded in the Brewfile.")
@@ -247,7 +275,27 @@ def cmd_report(args):
         print("\nRecord with: brew-sync add    Silence with: brew-sync ignore <name>")
 
 
+def cmd_add_mas(args):
+    if not args.profile:
+        sys.exit("brew-sync: --profile is required with --mas")
+    report, _, _ = gather(args)
+    wanted = {name if name.endswith(".app") else name + ".app" for name in args.names}
+    found = [(app, store_id) for app, store_id in report["app_store"]
+             if not wanted or app in wanted]
+    for name in sorted(wanted - {app for app, _ in found}):
+        print(f"not an unrecorded App Store app: {name}")
+    if not found and not wanted:
+        print("No unrecorded App Store apps.")
+    for app, store_id in found:
+        if not store_id:
+            print(f"skipped (no store ID found): {app}")
+        elif add_mas_entry(args.brew_dir, args.profile, app, store_id):
+            print(f"added: mas \"{app[:-4]}\" -> brew/{args.profile}.rb")
+
+
 def cmd_add(args):
+    if args.mas:
+        return cmd_add_mas(args)
     if args.names:
         if not args.profile:
             sys.exit("brew-sync: --profile is required when naming casks or formulae")
@@ -309,6 +357,8 @@ def main(argv=None):
     add.add_argument("names", nargs="*")
     add.add_argument("--profile")
     add.add_argument("--formula", action="store_true", help="the names are formulae, not casks")
+    add.add_argument("--mas", action="store_true",
+                     help="record App Store apps (all unrecorded ones, or the named apps)")
     ignore = commands.add_parser("ignore", help="never report these names")
     ignore.add_argument("names", nargs="+")
     args = parser.parse_args(argv)
