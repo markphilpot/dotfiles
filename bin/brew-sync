@@ -1,0 +1,319 @@
+#!/usr/bin/python3
+"""Compare what is installed on this Mac with the Brewfile profiles in brew/.
+
+    brew-sync                               report what is not recorded
+    brew-sync add                           walk unrecorded apps and pick a profile
+    brew-sync add <cask>... --profile NAME  record casks without prompting
+    brew-sync ignore <name>...              never report these again
+
+Apps are matched to casks by the .app name each cask installs, using
+Homebrew's public cask list (cached for a day).
+"""
+
+import argparse
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+import urllib.request
+from pathlib import Path
+
+CASK_API_URL = "https://formulae.brew.sh/api/cask.json"
+CACHE_MAX_AGE = 24 * 60 * 60
+APP_DIRS = ["/Applications", "~/Applications"]
+ENTRY_RE = re.compile(r'^\s*(brew|cask)\s+"([^"]+)"', re.M)
+
+REPO = Path(os.path.realpath(__file__)).parent.parent
+
+
+# --- cask index -----------------------------------------------------------
+
+def app_names(cask):
+    """The .app names a cask installs, after any rename."""
+    names = []
+    for artifact in cask.get("artifacts", []):
+        if "app" not in artifact:
+            continue
+        sources = [a for a in artifact["app"] if isinstance(a, str)]
+        targets = [a["target"] for a in artifact["app"] if isinstance(a, dict) and "target" in a]
+        if isinstance(artifact.get("target"), str):
+            targets.append(artifact["target"])
+        names += [os.path.basename(n) for n in (targets or sources)]
+    return names
+
+
+def build_index(casks):
+    """Map an .app name to the casks that install it."""
+    index = {}
+    for cask in casks:
+        for name in app_names(cask):
+            index.setdefault(name, []).append(cask["token"])
+    return index
+
+
+def load_casks(path=None, refresh=False):
+    if path:
+        return json.loads(Path(path).read_text())
+    cache_home = Path(os.environ.get("XDG_CACHE_HOME", "~/.cache")).expanduser()
+    cache = cache_home / "dotfiles" / "cask.json"
+    fresh = cache.exists() and time.time() - cache.stat().st_mtime < CACHE_MAX_AGE
+    if refresh or not fresh:
+        try:
+            cache.parent.mkdir(parents=True, exist_ok=True)
+            with urllib.request.urlopen(CASK_API_URL, timeout=60) as response:
+                cache.write_bytes(response.read())
+        except OSError as error:
+            if not cache.exists():
+                sys.exit(f"brew-sync: could not download the cask list: {error}")
+            print(f"brew-sync: using the cached cask list ({error})", file=sys.stderr)
+    return json.loads(cache.read_text())
+
+
+# --- this machine ---------------------------------------------------------
+
+def scan_apps(app_dirs):
+    """Return [(app name, is from the App Store)] for top-level .app bundles."""
+    apps = {}
+    for app_dir in app_dirs:
+        directory = Path(app_dir).expanduser()
+        if not directory.is_dir():
+            continue
+        for app in directory.glob("*.app"):
+            apps[app.name] = (app / "Contents" / "_MASReceipt").exists()
+    return sorted(apps.items(), key=lambda item: item[0].lower())
+
+
+def brew_lines(*args):
+    result = subprocess.run(["brew", *args], capture_output=True, text=True)
+    return result.stdout.split()
+
+
+# --- Brewfile profiles ----------------------------------------------------
+
+def read_profiles(brew_dir):
+    """Return {profile: {"brew": set, "cask": set}} for every brew/*.rb."""
+    profiles = {}
+    for path in sorted(Path(brew_dir).glob("*.rb")):
+        entries = {"brew": set(), "cask": set()}
+        for kind, name in ENTRY_RE.findall(path.read_text()):
+            entries[kind].add(name.split("/")[-1])
+        profiles[path.stem] = entries
+    return profiles
+
+
+def recorded(profiles, kind):
+    return set().union(*(entries[kind] for entries in profiles.values())) if profiles else set()
+
+
+def read_ignored(brew_dir):
+    path = Path(brew_dir) / "ignore.txt"
+    if not path.exists():
+        return set()
+    lines = (line.split("#")[0].strip() for line in path.read_text().splitlines())
+    return {line for line in lines if line}
+
+
+def add_entry(brew_dir, profile, kind, name):
+    """Append an entry to a profile. Returns False if any profile already has it."""
+    profiles = read_profiles(brew_dir)
+    if name in recorded(profiles, kind):
+        return False
+    path = Path(brew_dir) / f"{profile}.rb"
+    text = path.read_text() if path.exists() else f"# {profile} profile.\n\n"
+    if not text.endswith("\n"):
+        text += "\n"
+    path.write_text(text + f'{kind} "{name}"\n')
+    return True
+
+
+def add_ignored(brew_dir, name):
+    if name in read_ignored(brew_dir):
+        return False
+    path = Path(brew_dir) / "ignore.txt"
+    text = path.read_text() if path.exists() else (
+        "# Apps, casks and formulae that brew-sync should never report.\n"
+        "# One per line: an app name (\"Safari.app\") or a brew name (\"pyenv\").\n"
+    )
+    if not text.endswith("\n"):
+        text += "\n"
+    path.write_text(text + name + "\n")
+    return True
+
+
+# --- classification -------------------------------------------------------
+
+def candidates_for(app, index, installed_casks):
+    """The casks that could have installed an app, narrowed where possible."""
+    tokens = index.get(app, [])
+    managed = [t for t in tokens if t in installed_casks]
+    if managed:
+        return managed
+    # Prefer the stable cask over its @beta / @nightly variants.
+    stable = [t for t in tokens if "@" not in t]
+    return stable or tokens
+
+
+def classify(apps, index, profiles, ignored, installed_casks, installed_formulae):
+    recorded_casks = recorded(profiles, "cask")
+    recorded_formulae = recorded(profiles, "brew")
+    report = {
+        "unrecorded": [],      # (app, [candidate casks])
+        "app_store": [],       # (app, [candidate casks])
+        "unmatched": [],       # app
+        "needs_adopt": [],     # (app, cask) recorded but not yet managed by brew
+        "casks": [],           # brew-managed casks missing from every profile
+        "formulae": [],        # brew-managed formulae missing from every profile
+    }
+    seen_casks = set()
+    for app, from_app_store in apps:
+        tokens = index.get(app, [])
+        in_brewfile = [t for t in tokens if t in recorded_casks]
+        if in_brewfile:
+            seen_casks.update(in_brewfile)
+            if not any(t in installed_casks for t in in_brewfile):
+                report["needs_adopt"].append((app, in_brewfile[0]))
+            continue
+        if app in ignored or any(t in ignored for t in tokens):
+            seen_casks.update(tokens)
+            continue
+        candidates = candidates_for(app, index, installed_casks)
+        seen_casks.update(candidates)
+        if from_app_store:
+            report["app_store"].append((app, candidates))
+        elif candidates:
+            report["unrecorded"].append((app, candidates))
+        else:
+            report["unmatched"].append(app)
+    report["casks"] = sorted(
+        t for t in installed_casks
+        if t not in recorded_casks and t not in ignored and t not in seen_casks
+    )
+    report["formulae"] = sorted(
+        f for f in installed_formulae if f not in recorded_formulae and f not in ignored
+    )
+    return report
+
+
+# --- commands -------------------------------------------------------------
+
+def gather(args):
+    casks = load_casks(args.cask_json, args.refresh)
+    by_token = {cask["token"]: cask for cask in casks}
+    profiles = read_profiles(args.brew_dir)
+    report = classify(
+        scan_apps(args.app_dir or APP_DIRS),
+        build_index(casks),
+        profiles,
+        read_ignored(args.brew_dir),
+        set(brew_lines("list", "--cask")),
+        {f.split("/")[-1] for f in brew_lines("leaves", "--installed-on-request")},
+    )
+    return report, by_token, profiles
+
+
+def section(title, rows):
+    if not rows:
+        return
+    print(f"\n{title} ({len(rows)})")
+    for row in rows:
+        print(f"  {row}")
+
+
+def describe(app, tokens, by_token):
+    if len(tokens) > 1:
+        return f"{app:32} {' | '.join(tokens)}  (pick one)"
+    if not tokens:
+        return app
+    note = "" if by_token.get(tokens[0], {}).get("auto_updates") else "  (brew upgrades this one)"
+    return f"{app:32} {tokens[0]}{note}"
+
+
+def cmd_report(args):
+    report, by_token, _ = gather(args)
+    section("Apps with a matching cask that are not in the Brewfile",
+            [describe(app, tokens, by_token) for app, tokens in report["unrecorded"]])
+    section("Brew casks that are not in the Brewfile", report["casks"])
+    section("Brew formulae that are not in the Brewfile", report["formulae"])
+    section("In the Brewfile but not yet managed by brew (brew bundle will adopt these)",
+            [f"{app:32} {token}" for app, token in report["needs_adopt"]])
+    section("App Store apps (not recorded; needs mas)",
+            [app for app, _ in report["app_store"]])
+    section("Apps with no matching cask", report["unmatched"])
+    if not any(report.values()):
+        print("Everything installed is recorded in the Brewfile.")
+    else:
+        print("\nRecord with: brew-sync add    Silence with: brew-sync ignore <name>")
+
+
+def cmd_add(args):
+    if args.names:
+        if not args.profile:
+            sys.exit("brew-sync: --profile is required when naming casks or formulae")
+        kind = "brew" if args.formula else "cask"
+        if kind == "cask":
+            known = {cask["token"] for cask in load_casks(args.cask_json, args.refresh)}
+            unknown = [name for name in args.names if name not in known]
+            if unknown:
+                sys.exit(f"brew-sync: no such cask: {', '.join(unknown)}")
+        for name in args.names:
+            added = add_entry(args.brew_dir, args.profile, kind, name)
+            print(f'{"added" if added else "already recorded"}: {kind} "{name}"'
+                  + (f" -> brew/{args.profile}.rb" if added else ""))
+        return
+
+    report, by_token, profiles = gather(args)
+    todo = report["unrecorded"] + [(cask, [cask]) for cask in report["casks"]]
+    if not todo:
+        print("No unrecorded apps or casks.")
+        return
+    names = sorted(profiles)
+    print(f"Profiles: {', '.join(names)}")
+    print("For each app, type a profile name (a new name creates it), "
+          "i to ignore, Enter to skip, q to quit.\n")
+    for app, tokens in todo:
+        token = tokens[0]
+        if len(tokens) > 1:
+            choice = input(f"{app}: which cask? {' / '.join(tokens)} (Enter to skip): ").strip()
+            if choice not in tokens:
+                continue
+            token = choice
+        desc = by_token.get(token, {}).get("desc") or ""
+        answer = input(f"{app} -> {token}  {desc}\n  profile: ").strip()
+        if answer == "q":
+            break
+        if answer == "i":
+            add_ignored(args.brew_dir, app)
+        elif answer:
+            add_entry(args.brew_dir, answer, "cask", token)
+            print(f"  added to brew/{answer}.rb")
+
+
+def cmd_ignore(args):
+    for name in args.names:
+        added = add_ignored(args.brew_dir, name)
+        print(f'{"ignored" if added else "already ignored"}: {name}')
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--brew-dir", default=str(REPO / "brew"), help=argparse.SUPPRESS)
+    parser.add_argument("--app-dir", action="append", help=argparse.SUPPRESS)
+    parser.add_argument("--cask-json", help=argparse.SUPPRESS)
+    parser.add_argument("--refresh", action="store_true",
+                        help="download the cask list again, ignoring the cache")
+    commands = parser.add_subparsers(dest="command")
+    add = commands.add_parser("add", help="record apps in a profile")
+    add.add_argument("names", nargs="*")
+    add.add_argument("--profile")
+    add.add_argument("--formula", action="store_true", help="the names are formulae, not casks")
+    ignore = commands.add_parser("ignore", help="never report these names")
+    ignore.add_argument("names", nargs="+")
+    args = parser.parse_args(argv)
+    {"add": cmd_add, "ignore": cmd_ignore, None: cmd_report}[args.command](args)
+
+
+if __name__ == "__main__":
+    main()

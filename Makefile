@@ -7,6 +7,9 @@ apt:
 brew:
 	brew bundle --file=Brewfile
 
+test:
+	/usr/bin/python3 -m unittest discover -s tests
+
 # https://unix.stackexchange.com/a/771880
 # List of packages to manage with stow
 #PACKAGES ?= $(filter-out .git .github, $(wildcard */))
@@ -89,7 +92,8 @@ help:
 	@echo "  unstow  - Remove symlinks for all packages (\033[31mcaution\033[0m)"
 	@echo "  brew    - Install everything in the Brewfile"
 	@echo "  apt     - Install stow with apt (Linux)"
+	@echo "  test    - Run the tests for the scripts in bin/"
 	@echo "  help    - Show this help message"
 	@echo ""
 
-.PHONY: all backup stow unstow restow help apt brew
+.PHONY: all backup stow unstow restow help apt brew test
