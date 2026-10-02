@@ -71,7 +71,8 @@ chooses its own set. Names are separated by spaces or newlines.
 | Profile | Contents |
 |---|---|
 | `core` | Shell environment, git, editors and everyday command-line tools. Always loaded. |
-| `apps` | Desktop apps for any Mac used interactively, including browsers |
+| `apps` | Desktop apps for any Mac used interactively |
+| `browsers` | Web browsers |
 | `dev` | Development tools, editors and IDEs |
 | `ios` | iOS and mobile development |
 | `media` | Audio, video, image and document conversion tools |
