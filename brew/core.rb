@@ -1,0 +1,19 @@
+# Installed on every Mac.
+
+brew "stow"
+brew "git"
+brew "htop"
+brew "imagemagick"
+brew "wget"
+brew "neovim"
+brew "rename"
+brew "fzf"
+brew "git-lfs"
+brew "bat"
+brew "jq"
+brew "kondo"
+brew "starship"
+brew "zsh-syntax-highlighting"
+brew "zsh-autosuggestions"
+
+cask "font-jetbrains-mono-nerd-font"
