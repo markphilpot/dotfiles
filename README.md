@@ -55,7 +55,7 @@ Each top-level folder is a stow package whose contents mirror `$HOME`.
 | `bash`, `zsh`, `fish` | Shell configs |
 | `git` | Git config and global ignore file, for every platform |
 | `git-macos` | `~/.gitconfig.local`: signing and credential settings, macOS only |
-| `neovim`, `wezterm`, `zellij`, `starship`, `espanso` | Tool configs |
+| `neovim`, `wezterm`, `ghostty`, `zellij`, `starship`, `espanso` | Tool configs |
 | `brew` | Brewfile profiles and the `brew-sync` ignore list (not stowed) |
 | `bin` | Scripts on the `PATH` (not stowed) |
 

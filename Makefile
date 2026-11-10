@@ -13,7 +13,7 @@ test:
 # https://unix.stackexchange.com/a/771880
 # List of packages to manage with stow
 #PACKAGES ?= $(filter-out .git .github, $(wildcard */))
-PACKAGES ?= espanso fish git neovim starship wezterm zellij zsh bash
+PACKAGES ?= espanso fish ghostty git neovim starship wezterm zellij zsh bash
 
 # Packages that only apply on macOS (signing, keychain, 1Password)
 OS ?= $(shell uname -s)
